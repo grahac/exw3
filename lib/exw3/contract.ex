@@ -37,6 +37,8 @@ defmodule ExW3.Contract do
     GenServer.call(ContractManager, {:address, name})
   end
 
+
+
   @doc "Use a Contract's method with an eth_call"
   @spec call(atom(), atom(), list(), any()) :: {:ok, any()}
   def call(contract_name, method_name, args \\ [], timeout \\ :infinity) do
@@ -241,6 +243,10 @@ defmodule ExW3.Contract do
     ])
   end
 
+  def  convert_contract(contract_info) do
+    register_helper(contract_info)
+  end
+
   defp register_helper(contract_info) do
     if contract_info[:abi] do
       contract_info ++ init_events(contract_info[:abi])
@@ -362,7 +368,12 @@ defmodule ExW3.Contract do
     Enum.zip(names, ExW3.Abi.decode_event(data, signature)) |> Enum.into(%{})
   end
 
-  defp format_log_data(log, event_attributes) do
+  def get_event_attributes(contract_info, event_name) do
+      contract_info[:events][contract_info[:event_names][event_name]]
+  end
+
+
+  def format_log_data(log, event_attributes) do
     non_indexed_fields =
       extract_non_indexed_fields(
         Map.get(log, "data"),
@@ -421,6 +432,7 @@ defmodule ExW3.Contract do
        })
      )}
   end
+
 
   def handle_call({:get_filter_changes, filter_id}, _from, state) do
     filter_info = Map.get(state[:filters], filter_id)
