@@ -200,6 +200,42 @@ def listen_for_event do
 end
 ```
 
+Alternatively you may use the new Ethereumex websocket transport and subscribe to real-time events:
+
+In your `config.exs`:
+
+```elixir
+config :ethereumex,
+  client_type: :ws,
+  url: "http://localhost:8545"
+```
+
+```elixir
+abi = ExW3.Abi.load_abi("test/examples/build/EventTester.abi")
+accounts = ExW3.accounts()
+
+{:ok, contract} = ExW3.Contract.start()
+ExW3.Contract.register(:EventTester, abi: abi)
+{:ok, address, _} = ExW3.Contract.deploy(:EventTester, bin: ExW3.Abi.load_bin("test/examples/build/EventTester.bin"), args: [], options: %{ gas: 300_000, from: Enum.at(accounts, 0) })
+ExW3.Contract.at(:EventTester, address)
+
+# subscribe ourselves to events for the contract address
+{:ok, event_tester_logs} = ExW3.Logs.start(%{address: address})
+ExW3.Logs.add_recipient(event_tester_logs, self())
+
+# Now send a test event
+ExW3.Contract.send(:EventTester, :simple, ["somedata"], %{from: Enum.at(accounts, 0), gas: 50_000})
+
+# If you're running these in iex you can flush to see the messages:
+flush()
+
+# When you're done with the logs, stop the process:
+ExW3.Logs.stop(event_tester_logs)
+```
+
+Recipients will receive messages like: `{:eth_log, %{"address" => "0xa379..."}, ...}` for each event. If the websocket connection dies Ethereumex will automatically re-connect when possible and `ExW3.Logs` is smart enough to send you all the logs you missed while the connection was down as well as re-subscribing.
+
+
 # Compiling Solidity
 
 To compile the test solidity contracts after making a change run this command:

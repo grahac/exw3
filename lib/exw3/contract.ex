@@ -1,6 +1,10 @@
 defmodule ExW3.Contract do
   use GenServer
 
+  def start() do
+    GenServer.start(__MODULE__, %{filters: %{}}, name: ContractManager)
+  end
+
   @doc "Begins the Contract process to manage all interactions with smart contracts"
   @spec start_link() :: {:ok, pid()}
   def start_link(_ \\ :ok) do

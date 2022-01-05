@@ -90,8 +90,8 @@ defmodule ExW3.Rpc do
 
   @type log_filter :: %{
           optional(:address) => String.t(),
-          optional(:fromBlock) => hex_block_number | latest | earliest | pending,
-          optional(:toBlock) => hex_block_number | latest | earliest | pending,
+          optional(:fromBlock) => hex_block_number | latest | earliest | pending | number(),
+          optional(:toBlock) => hex_block_number | latest | earliest | pending | number(),
           optional(:topics) => [String.t()],
           optional(:blockhash) => String.t()
         }
@@ -181,5 +181,17 @@ defmodule ExW3.Rpc do
   @spec eth_send(list()) :: any()
   def eth_send(arguments) do
     call_client(:eth_send_transaction, arguments)
+  end
+
+  @doc "Simple eth_subscribe"
+  @spec eth_subscribe(list(), pid()) :: any()
+  def eth_subscribe(arguments, pid) do
+    call_client(:eth_subscribe, [arguments, pid])
+  end
+
+  @doc "Simple eth_unsubscribe"
+  @spec eth_unsubscribe(binary()) :: any()
+  def eth_unsubscribe(sub_id) do
+    call_client(:eth_unsubscribe, [sub_id])
   end
 end

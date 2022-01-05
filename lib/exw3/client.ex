@@ -11,6 +11,7 @@ defmodule ExW3.Client do
     case client_type(url_opt) do
       :http -> apply(Ethereumex.HttpClient, method_name, arguments)
       :ipc -> apply(Ethereumex.IpcClient, method_name, arguments)
+      :ws -> apply(Ethereumex.WsClient, method_name, arguments)
       _ -> {:error, :invalid_client_type}
     end
   end
@@ -27,5 +28,7 @@ defmodule ExW3.Client do
   defp client_type(nil), do: Application.get_env(:ethereumex, :client_type, :http)
   defp client_type("http://" <> _), do: :http
   defp client_type("https://" <> _), do: :http
+  defp client_type("ws://" <> _), do: :ws
+  defp client_type("wss://" <> _), do: :ws
   defp client_type(_), do: :invalid
 end
